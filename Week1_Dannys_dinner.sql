@@ -28,3 +28,38 @@ WHERE
             sales
         GROUP BY customer_id)
 ORDER BY s.customer_id , s.order_date;
+
+-- 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
+with new_table as
+(SELECT 
+    m.product_name, COUNT(*) AS times_purchased
+FROM
+    sales s
+        JOIN
+    menu m ON s.product_id = m.product_id
+GROUP BY m.product_name)
+
+select * from new_table
+order by times_purchased desc
+limit 1;
+
+-- 5. Which item was the most popular for each customer?
+With ranked_orders AS (
+    SELECT 
+        s.customer_id AS customer,
+        m.product_name AS product,
+        COUNT(s.customer_id) AS order_count,
+        RANK() OVER (
+            PARTITION BY s.customer_id 
+            ORDER BY COUNT(s.customer_id) DESC
+        ) AS rank_1 
+        FROM Sales s
+    LEFT JOIN Menu m ON s.product_id = m.product_id
+    GROUP BY s.customer_id, m.product_name
+)
+
+SELECT 
+    customer,
+    product
+FROM ranked_orders
+WHERE rank_1 = 1;
