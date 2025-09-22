@@ -114,3 +114,19 @@ WHERE ranking = 1;
 
 
 -- 8. What is the total items and amount spent for each member before they became a member?
+
+SELECT 
+    s.customer_id AS customer,
+    COUNT(mn.product_id) AS total_count,
+    IFNULL(SUM(mn.price), 0) AS price
+FROM
+    sales s
+        LEFT JOIN
+    members m ON s.customer_id = m.customer_id
+        LEFT JOIN
+    menu mn ON s.product_id = mn.product_id
+        AND m.customer_id IS NOT NULL
+WHERE
+    s.order_date < m.join_date
+        OR m.join_date IS NULL
+GROUP BY s.customer_id;
