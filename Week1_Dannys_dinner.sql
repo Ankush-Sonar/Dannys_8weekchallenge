@@ -113,3 +113,4 @@ FROM new_table
 WHERE ranking = 1;
 
 
+-- 8. What is the total items and amount spent for each member before they became a member?
