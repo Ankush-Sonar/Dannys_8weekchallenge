@@ -130,3 +130,58 @@ WHERE
     s.order_date < m.join_date
         OR m.join_date IS NULL
 GROUP BY s.customer_id;
+
+
+-- 9.  If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
+
+WITH points_table AS (
+    SELECT 
+        s.customer_id AS customer,
+        CASE 
+            WHEN mn.product_name = 'sushi' THEN price * 20
+            ELSE price * 10
+        END AS points
+    FROM sales s
+    LEFT JOIN menu mn
+    LEFT JOIN menu mn
+        ON s.product_id = mn.product_id
+)
+SELECT 
+    customer, 
+    SUM(points) AS total_points
+FROM points_table
+GROUP BY customer;
+
+-- 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
+WITH points_table AS (
+    SELECT
+        s.order_date AS order_date,
+        s.customer_id AS customer,
+        CASE 
+            WHEN s.order_date BETWEEN m.join_date 
+                                AND DATE_ADD(m.join_date, INTERVAL 6 DAY) 
+                THEN price * 20
+            WHEN s.order_date NOT BETWEEN m.join_date 
+                                     AND DATE_ADD(m.join_date, INTERVAL 6 DAY) 
+                 AND mn.product_name = 'sushi' 
+                THEN price * 20
+            ELSE price * 10
+        END AS points
+    FROM sales s
+    LEFT JOIN members m
+        ON s.customer_id = m.customer_id 
+    LEFT JOIN menu mn
+        ON s.product_id = mn.product_id
+)
+
+SELECT 
+    customer, 
+    SUM(points) AS total_points
+FROM points_table
+WHERE order_date <= '2021-01-31'
+GROUP BY customer;
+
+-- Example Query:
+
+
+
